@@ -12,7 +12,7 @@ Visit https://example.com, then refresh. {MD034}
 
 The site (https://example.com) is down. {MD034}
 
-<!-- markdownlint-disable line-length no-inline-html -->
+<!-- markdownlint-disable descriptive-link-text line-length no-inline-html -->
 
 Some documents use <a href="https://example.com">to link</a>.
 
@@ -70,12 +70,12 @@ https://example.com
 
 <div>
 
-https://example.com
+https://example.com {MD034}
 </div>
 
 <div>
 
-https://example.com
+https://example.com {MD034}
 
 </div>
 
@@ -96,6 +96,8 @@ Links with spaces inside angle brackets are okay: [blue jay](<https://en.wikiped
 Email addresses are treated similarly: user@example.com {MD034}
 
 Angle brackets work the same for email: <user@example.com>
+
+Unusual email addresses are handled: <user@.com>
 
 ---
 

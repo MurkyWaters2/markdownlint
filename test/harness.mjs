@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { parse } from "../helpers/micromark.cjs";
-import library from "../lib/markdownlint.js";
-const markdownlint = library.promises.markdownlint;
+import { lint } from "markdownlint/promise";
+import { parse } from "../lib/micromark-parse.mjs";
 
 /* eslint-disable no-await-in-loop, no-console */
 
@@ -43,7 +42,7 @@ for (const file of files) {
   let results = null;
   performance.mark("profile-start");
   for (let i = 0; i < count; i++) {
-    results = await markdownlint({
+    results = await lint({
       "files": [ file ]
     });
   }

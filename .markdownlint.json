@@ -8,6 +8,9 @@
   "emphasis-style": {
     "style": "asterisk"
   },
+  "extended-ascii": {
+    "ascii-only": true
+  },
   "fenced-code-language": {
     "allowed_languages": [
       "bash",
@@ -28,6 +31,11 @@
   "line-length": {
     "strict": true,
     "code_blocks": false
+  },
+  "link-image-style": {
+    "collapsed": false,
+    "shortcut": false,
+    "url_inline": false
   },
   "no-duplicate-heading": {
     "siblings_only": true

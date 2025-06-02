@@ -3,9 +3,6 @@
 Long line long line long line long line long line long line long line long line long line long line {MD013}
 
 <!-- markdownlint-configure-file {
-  "first-heading-h1": {
-    "level": "1"
-  },
   "heading-style": {
     "style": 0
   },
@@ -30,7 +27,6 @@ Long line long line long line long line long line long line long line long line 
   "line-length": {
     "code_block_line_length": "80",
     "code_blocks": 1,
-    "headers": 1,
     "heading_line_length": "80",
     "headings": 1,
     "line_length": "80",
@@ -42,7 +38,6 @@ Long line long line long line long line long line long line long line long line 
     "lines_below": "1"
   },
   "no-duplicate-heading": {
-    "allow_different_nesting": 0,
     "siblings_only": 0
   },
   "single-title": {
@@ -78,7 +73,6 @@ Long line long line long line long line long line long line long line long line 
     "level": "1"
   },
   "required-headings": {
-    "headers": 0,
     "headings": 0
   },
   "proper-names": {

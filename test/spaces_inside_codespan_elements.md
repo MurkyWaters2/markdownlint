@@ -10,7 +10,7 @@
 
 empty `` codespan element
 
-single space ` ` codespan element {MD038}
+single space ` ` codespan element
 
 `,`, `.`
 
@@ -60,11 +60,11 @@ text and ``\`code with ignored escaped \` backticks``
 
 ` `` ` text `code`
 
-``` ` leading space allowed for backtick``` text `code`
+``` ` surrounding space allowed for backtick ``` text `code`
 
 ```  ` multiple leading spaces not allowed``` text `code` {MD038}
 
-``trailing space allowed for backtick ` `` text `code`
+`` surrounding space allowed for backtick ` `` text `code`
 
 ``multiple trailing spaces not allowed `  `` text `code` {MD038}
 
@@ -106,7 +106,10 @@ No start space, end space: `code ` {MD038}
 
 Single start and end space: ` code ` (explicitly allowed/trimmed by the specification)
 
-All spaces: `    ` {MD038}
+All spaces: ` ` `  ` `   ` `    `
+
+All line endings: `
+`
 
 Double start and single end space: `  code ` {MD038}
 
@@ -123,13 +126,13 @@ Again, 2 characters: ` ab `
 Again, 1 character: ` a `
 Many internal spaces: ` code code  code   code    code     code `
 
-text ``` ` leading space
-allowed for backtick``` text
+text ``` ` surrounding space
+allowed for backtick ``` text
 
 text ```  ` multiple leading {MD038}
 spaces not allowed``` text
 
-text ``trailing space
+text `` surrounding space
 allowed for backtick ` `` text
 
 text ``multiple trailing spaces
@@ -137,3 +140,34 @@ not allowed `  `` text {MD038}
 
 text `` ` leading and trailing
 space allowed for backtick ` `` text
+
+<!-- markdownlint-disable blanks-around-fences fenced-code-language -->
+
+Text
+```
+Code
+```
+
+Text
+    ```
+    Code {MD038}
+    ```
+
+Text
+    ```
+Code
+    ```
+
+Text
+    ```
+    Code {MD038}
+    ```
+Text
+
+Text
+    ```
+Code
+    ```
+Text
+
+<!-- markdownlint-disable-file descriptive-link-text -->

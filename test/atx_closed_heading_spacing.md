@@ -12,13 +12,13 @@
 
 ##   Heading 7 {MD021}   ##
 
-## Heading 8 {MD003}\#
+## Heading 8\#
 
-## Heading 9 {MD003} \#
+## Heading 9 \#
 
-## Heading 10 {MD003}  \#
+## Heading 10  \#
 
 <!-- markdownlint-configure-file {
-  "first-heading-h1": false,
-  "first-line-heading": false
+  "first-line-heading": false,
+  "heading-style": false
 } -->

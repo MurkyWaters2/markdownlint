@@ -38,5 +38,6 @@ code
 
 <!-- markdownlint-configure-file {
   "code-block-style": false,
+  "descriptive-link-text": false,
   "heading-style": false
 } -->

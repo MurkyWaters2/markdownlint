@@ -2,9 +2,9 @@
 
 import fs from "node:fs/promises";
 import test from "ava";
-import { newLineRe } from "../helpers/helpers.js";
-import { filterByPredicate, filterByTypes, getMicromarkEvents, parse }
-  from "../helpers/micromark.cjs";
+import { newLineRe } from "../helpers/helpers.cjs";
+import { filterByPredicate, filterByTypes } from "../helpers/micromark-helpers.cjs";
+import { getEvents, parse } from "../lib/micromark-parse.mjs";
 
 const testContent = new Promise((resolve, reject) => {
   fs
@@ -22,10 +22,10 @@ test("parse", async(t) => {
   t.snapshot(await testTokens, "Unexpected tokens");
 });
 
-test("getMicromarkEvents/filterByPredicate", async(t) => {
+test("getEvents/filterByPredicate", async(t) => {
   t.plan(1);
   const content = await testContent;
-  const events = getMicromarkEvents(content);
+  const events = getEvents(content);
   let inHtmlFlow = false;
   const eventTypes = events
     .filter((event) => {
@@ -46,22 +46,45 @@ test("getMicromarkEvents/filterByPredicate", async(t) => {
   t.deepEqual(tokenTypes, eventTypes);
 });
 
-test("filterByTypes", async(t) => {
-  t.plan(8);
-  const filtered = filterByTypes(
-    await testTokens,
-    [ "atxHeadingText", "codeText", "htmlText", "setextHeadingText" ]
-  );
+test("filterByTypes, htmlFlow false", async(t) => {
+  t.plan(7);
+  const tokens = await testTokens;
+  /** @type {import("micromark-util-types").TokenType[]} */
+  const types = [ "atxHeadingText", "codeText", "htmlText", "setextHeadingText" ];
+  const filtered = filterByTypes(tokens, types);
+  // Using flat tokens
   for (const token of filtered) {
     t.true(token.type.endsWith("Text"));
   }
+  // Not using flat tokens
+  t.deepEqual(
+    filtered,
+    filterByTypes([ ...tokens ], types)
+  );
+});
+
+test("filterByTypes, htmlFlow true", async(t) => {
+  t.plan(9);
+  const tokens = await testTokens;
+  /** @type {import("micromark-util-types").TokenType[]} */
+  const types = [ "atxHeadingText", "codeText", "htmlText", "setextHeadingText" ];
+  // Using flat tokens
+  const filtered = filterByTypes(tokens, types, true);
+  for (const token of filtered) {
+    t.true(token.type.endsWith("Text"));
+  }
+  // Not using flat tokens
+  t.deepEqual(
+    filtered,
+    filterByTypes([ ...tokens ], types, true)
+  );
 });
 
 test("filterByPredicate/filterByTypes", async(t) => {
   t.plan(1);
   const tokens = await testTokens;
   const byPredicate = filterByPredicate(tokens, () => true);
-  const allTypes = new Set(byPredicate.map(((token) => token.type)));
-  const byTypes = filterByTypes(tokens, [ ...allTypes.values() ]);
+  const allTypes = new Set(byPredicate.map((token) => token.type));
+  const byTypes = filterByTypes(tokens, [ ...allTypes.values() ], true);
   t.deepEqual(byPredicate, byTypes);
 });

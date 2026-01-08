@@ -19,6 +19,7 @@ const schema = {
   "$id": schemaUri,
   "title": "markdownlint configuration schema",
   "type": "object",
+  /** @type {Object.<string, object>} */
   "properties": {
     "$schema": {
       "description": "JSON Schema URI (expected by some editors)",
@@ -27,7 +28,10 @@ const schema = {
     },
     "default": {
       "description": "Default state for all rules",
-      "type": "boolean",
+      "oneOf": [
+        { "type": "boolean" },
+        { "enum": [ "error", "warning" ] }
+      ],
       "default": true
     },
     "extends": {
@@ -46,6 +50,7 @@ const schema = {
     ]
   }
 };
+/** @type {Object.<string, string[]>} */
 const tags = {};
 
 // Add rules
@@ -59,543 +64,598 @@ for (const rule of rules) {
   const scheme = {
     "description":
       `${rule.names.join("/")} : ${rule.description} : ${rule.information}`,
-    "type": "boolean",
+    "oneOf": [
+      { "type": "boolean" },
+      { "enum": [ "error", "warning" ] }
+    ],
     "default": true
   };
-  let custom = true;
+  const subscheme = {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": {
+        "description": "Whether to enable the rule",
+        "type": "boolean",
+        "default": true
+      },
+      "severity": {
+        "description": "Rule severity",
+        "type": "string",
+        "enum": [ "error", "warning" ],
+        "default": "error"
+      }
+    }
+  };
+  scheme.oneOf.push(subscheme);
+  /* eslint-disable camelcase */
   switch (ruleName) {
+    case "MD001":
+      // @ts-ignore
+      subscheme.properties.front_matter_title = {
+        "description": "RegExp for matching title in front matter",
+        "type": "string",
+        "default": "^\\s*title\\s*[:=]"
+      };
+      break;
     case "MD003":
-      scheme.properties = {
-        "style": {
-          "description": "Heading style",
-          "type": "string",
-          "enum": [
-            "consistent",
-            "atx",
-            "atx_closed",
-            "setext",
-            "setext_with_atx",
-            "setext_with_atx_closed"
-          ],
-          "default": "consistent"
-        }
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": "Heading style",
+        "type": "string",
+        "enum": [
+          "consistent",
+          "atx",
+          "atx_closed",
+          "setext",
+          "setext_with_atx",
+          "setext_with_atx_closed"
+        ],
+        "default": "consistent"
       };
       break;
     case "MD004":
-      scheme.properties = {
-        "style": {
-          "description": "List style",
-          "type": "string",
-          "enum": [
-            "consistent",
-            "asterisk",
-            "plus",
-            "dash",
-            "sublist"
-          ],
-          "default": "consistent"
-        }
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": "List style",
+        "type": "string",
+        "enum": [
+          "consistent",
+          "asterisk",
+          "plus",
+          "dash",
+          "sublist"
+        ],
+        "default": "consistent"
       };
       break;
     case "MD007":
-      scheme.properties = {
-        "indent": {
-          "description": "Spaces for indent",
-          "type": "integer",
-          "minimum": 1,
-          "default": 2
-        },
-        "start_indented": {
-          "description": "Whether to indent the first level of the list",
-          "type": "boolean",
-          "default": false
-        },
-        "start_indent": {
-          "description":
-            "Spaces for first level indent (when start_indented is set)",
-          "type": "integer",
-          "minimum": 1,
-          "default": 2
-        }
+      // @ts-ignore
+      subscheme.properties.indent = {
+        "description": "Spaces for indent",
+        "type": "integer",
+        "minimum": 1,
+        "default": 2
+      };
+      // @ts-ignore
+      subscheme.properties.start_indented = {
+        "description": "Whether to indent the first level of the list",
+        "type": "boolean",
+        "default": false
+      };
+      // @ts-ignore
+      subscheme.properties.start_indent = {
+        "description":
+          "Spaces for first level indent (when start_indented is set)",
+        "type": "integer",
+        "minimum": 1,
+        "default": 2
       };
       break;
     case "MD009":
-      scheme.properties = {
-        "br_spaces": {
-          "description": "Spaces for line break",
-          "type": "integer",
-          "minimum": 0,
-          "default": 2
-        },
-        "list_item_empty_lines": {
-          "description": "Allow spaces for empty lines in list items",
-          "type": "boolean",
-          "default": false
-        },
-        "strict": {
-          "description": "Include unnecessary breaks",
-          "type": "boolean",
-          "default": false
-        }
+      // @ts-ignore
+      subscheme.properties.br_spaces = {
+        "description": "Spaces for line break",
+        "type": "integer",
+        "minimum": 0,
+        "default": 2
+      };
+      // @ts-ignore
+      subscheme.properties.code_blocks = {
+        "description": "Include code blocks",
+        "type": "boolean",
+        "default": false
+      };
+      // @ts-ignore
+      subscheme.properties.list_item_empty_lines = {
+        "description": "Allow spaces for empty lines in list items",
+        "type": "boolean",
+        "default": false
+      };
+      // @ts-ignore
+      subscheme.properties.strict = {
+        "description": "Include unnecessary breaks",
+        "type": "boolean",
+        "default": false
       };
       break;
     case "MD010":
-      scheme.properties = {
-        "code_blocks": {
-          "description": "Include code blocks",
-          "type": "boolean",
-          "default": true
+      // @ts-ignore
+      subscheme.properties.code_blocks = {
+        "description": "Include code blocks",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.ignore_code_languages = {
+        "description": "Fenced code languages to ignore",
+        "type": "array",
+        "items": {
+          "type": "string"
         },
-        "ignore_code_languages": {
-          "description": "Fenced code languages to ignore",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": []
-        },
-        "spaces_per_tab": {
-          "description": "Number of spaces for each hard tab",
-          "type": "integer",
-          "minimum": 0,
-          "default": 1
-        }
+        "default": []
+      };
+      // @ts-ignore
+      subscheme.properties.spaces_per_tab = {
+        "description": "Number of spaces for each hard tab",
+        "type": "integer",
+        "minimum": 0,
+        "default": 1
       };
       break;
     case "MD012":
-      scheme.properties = {
-        "maximum": {
-          "description": "Consecutive blank lines",
-          "type": "integer",
-          "minimum": 1,
-          "default": 1
-        }
+      // @ts-ignore
+      subscheme.properties.maximum = {
+        "description": "Consecutive blank lines",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1
       };
       break;
     case "MD013":
-      scheme.properties = {
-        "line_length": {
-          "description": "Number of characters",
-          "type": "integer",
-          "minimum": 1,
-          "default": 80
-        },
-        "heading_line_length": {
-          "description": "Number of characters for headings",
-          "type": "integer",
-          "minimum": 1,
-          "default": 80
-        },
-        "code_block_line_length": {
-          "description": "Number of characters for code blocks",
-          "type": "integer",
-          "minimum": 1,
-          "default": 80
-        },
-        "code_blocks": {
-          "description": "Include code blocks",
-          "type": "boolean",
-          "default": true
-        },
-        "tables": {
-          "description": "Include tables",
-          "type": "boolean",
-          "default": true
-        },
-        "headings": {
-          "description": "Include headings",
-          "type": "boolean",
-          "default": true
-        },
-        "strict": {
-          "description": "Strict length checking",
-          "type": "boolean",
-          "default": false
-        },
-        "stern": {
-          "description": "Stern length checking",
-          "type": "boolean",
-          "default": false
-        }
+      // @ts-ignore
+      subscheme.properties.line_length = {
+        "description": "Number of characters",
+        "type": "integer",
+        "minimum": 1,
+        "default": 80
+      };
+      // @ts-ignore
+      subscheme.properties.heading_line_length = {
+        "description": "Number of characters for headings",
+        "type": "integer",
+        "minimum": 1,
+        "default": 80
+      };
+      // @ts-ignore
+      subscheme.properties.code_block_line_length = {
+        "description": "Number of characters for code blocks",
+        "type": "integer",
+        "minimum": 1,
+        "default": 80
+      };
+      // @ts-ignore
+      subscheme.properties.code_blocks = {
+        "description": "Include code blocks",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.tables = {
+        "description": "Include tables",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.headings = {
+        "description": "Include headings",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.strict = {
+        "description": "Strict length checking",
+        "type": "boolean",
+        "default": false
+      };
+      // @ts-ignore
+      subscheme.properties.stern = {
+        "description": "Stern length checking",
+        "type": "boolean",
+        "default": false
       };
       break;
     case "MD022":
-      scheme.properties = {
-        "lines_above": {
-          "description": "Blank lines above heading",
-          "type": [
-            "integer",
-            "array"
-          ],
-          "items": {
-            "type": "integer"
-          },
-          "minimum": -1,
-          "default": 1
+      // @ts-ignore
+      subscheme.properties.lines_above = {
+        "description": "Blank lines above heading",
+        "type": [
+          "integer",
+          "array"
+        ],
+        "items": {
+          "type": "integer"
         },
-        "lines_below": {
-          "description": "Blank lines below heading",
-          "type": [
-            "integer",
-            "array"
-          ],
-          "items": {
-            "type": "integer"
-          },
-          "minimum": -1,
-          "default": 1
-        }
+        "minimum": -1,
+        "default": 1
+      };
+      // @ts-ignore
+      subscheme.properties.lines_below = {
+        "description": "Blank lines below heading",
+        "type": [
+          "integer",
+          "array"
+        ],
+        "items": {
+          "type": "integer"
+        },
+        "minimum": -1,
+        "default": 1
       };
       break;
     case "MD024":
-      scheme.properties = {
-        "siblings_only": {
-          "description": "Only check sibling headings",
-          "type": "boolean",
-          "default": false
-        }
+      // @ts-ignore
+      subscheme.properties.siblings_only = {
+        "description": "Only check sibling headings",
+        "type": "boolean",
+        "default": false
       };
       break;
     case "MD026":
     case "MD036":
-      scheme.properties = {
-        "punctuation": {
-          "description": "Punctuation characters",
-          "type": "string",
-          "default": (ruleName === "MD026") ? ".,;:!。，；：！" : ".,;:!?。，；：！？"
-        }
+      // @ts-ignore
+      subscheme.properties.punctuation = {
+        "description": "Punctuation characters",
+        "type": "string",
+        "default": (ruleName === "MD026") ? ".,;:!。，；：！" : ".,;:!?。，；：！？"
       };
       break;
     case "MD027":
-      scheme.properties = {
-        "list_items": {
-          "description": "Include list items",
-          "type": "boolean",
-          "default": true
-        }
+      // @ts-ignore
+      subscheme.properties.list_items = {
+        "description": "Include list items",
+        "type": "boolean",
+        "default": true
       };
       break;
     case "MD029":
-      scheme.properties = {
-        "style": {
-          "description": "List style",
-          "type": "string",
-          "enum": [
-            "one",
-            "ordered",
-            "one_or_ordered",
-            "zero"
-          ],
-          "default": "one_or_ordered"
-        }
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": "List style",
+        "type": "string",
+        "enum": [
+          "one",
+          "ordered",
+          "one_or_ordered",
+          "zero"
+        ],
+        "default": "one_or_ordered"
       };
       break;
     case "MD030":
-      scheme.properties = {
-        "ul_single": {
-          "description": "Spaces for single-line unordered list items",
-          "type": "integer",
-          "minimum": 1,
-          "default": 1
-        },
-        "ol_single": {
-          "description": "Spaces for single-line ordered list items",
-          "type": "integer",
-          "minimum": 1,
-          "default": 1
-        },
-        "ul_multi": {
-          "description": "Spaces for multi-line unordered list items",
-          "type": "integer",
-          "minimum": 1,
-          "default": 1
-        },
-        "ol_multi": {
-          "description": "Spaces for multi-line ordered list items",
-          "type": "integer",
-          "minimum": 1,
-          "default": 1
-        }
+      // @ts-ignore
+      subscheme.properties.ul_single = {
+        "description": "Spaces for single-line unordered list items",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1
+      };
+      // @ts-ignore
+      subscheme.properties.ol_single = {
+        "description": "Spaces for single-line ordered list items",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1
+      };
+      // @ts-ignore
+      subscheme.properties.ul_multi = {
+        "description": "Spaces for multi-line unordered list items",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1
+      };
+      // @ts-ignore
+      subscheme.properties.ol_multi = {
+        "description": "Spaces for multi-line ordered list items",
+        "type": "integer",
+        "minimum": 1,
+        "default": 1
       };
       break;
     case "MD031":
-      scheme.properties = {
-        "list_items": {
-          "description": "Include list items",
-          "type": "boolean",
-          "default": true
-        }
+      // @ts-ignore
+      subscheme.properties.list_items = {
+        "description": "Include list items",
+        "type": "boolean",
+        "default": true
       };
       break;
     case "MD033":
-      scheme.properties = {
-        "allowed_elements": {
-          "description": "Allowed elements",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": []
-        }
+      // @ts-ignore
+      subscheme.properties.allowed_elements = {
+        "description": "Allowed elements",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": []
+      };
+      // @ts-ignore
+      subscheme.properties.table_allowed_elements = {
+        "description": "Allowed elements in tables",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": []
       };
       break;
     case "MD035":
-      scheme.properties = {
-        "style": {
-          "description": "Horizontal rule style",
-          "type": "string",
-          "default": "consistent"
-        }
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": "Horizontal rule style",
+        "type": "string",
+        "default": "consistent"
       };
       break;
     case "MD040":
-      scheme.properties = {
-        "allowed_languages": {
-          "description": "List of languages",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": []
+      // @ts-ignore
+      subscheme.properties.allowed_languages = {
+        "description": "List of languages",
+        "type": "array",
+        "items": {
+          "type": "string"
         },
-        "language_only": {
-          "description": "Require language only",
-          "type": "boolean",
-          "default": false
-        }
+        "default": []
+      };
+      // @ts-ignore
+      subscheme.properties.language_only = {
+        "description": "Require language only",
+        "type": "boolean",
+        "default": false
       };
       break;
     case "MD025":
     case "MD041":
-      {
-        const md041Properties = (ruleName === "MD041") ?
-          {
-            "allow_preamble": {
-              "description": "Allow content before first heading",
-              "type": "boolean",
-              "default": false
-            }
-          } :
-          {};
-        scheme.properties = {
-          ...md041Properties,
-          "front_matter_title": {
-            "description": "RegExp for matching title in front matter",
-            "type": "string",
-            "default": "^\\s*title\\s*[:=]"
-          },
-          "level": {
-            "description": "Heading level",
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 6,
-            "default": 1
-          }
-        };
-      }
-      break;
-    case "MD043":
-      scheme.properties = {
-        "headings": {
-          "description": "List of headings",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "pattern": "^(\\*|\\+|\\?|#{1,6}\\s+\\S.*)$"
-          },
-          "default": []
-        },
-        "match_case": {
-          "description": "Match case of headings",
+      if (ruleName === "MD041") {
+        // @ts-ignore
+        subscheme.properties.allow_preamble = {
+          "description": "Allow content before first heading",
           "type": "boolean",
           "default": false
-        }
+        };
+      }
+      // @ts-ignore
+      subscheme.properties.front_matter_title = {
+        "description": "RegExp for matching title in front matter",
+        "type": "string",
+        "default": "^\\s*title\\s*[:=]"
+      };
+      // @ts-ignore
+      subscheme.properties.level = {
+        "description": "Heading level",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 6,
+        "default": 1
+      };
+      break;
+    case "MD043":
+      // @ts-ignore
+      subscheme.properties.headings = {
+        "description": "List of headings",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^(\\*|\\+|\\?|#{1,6}\\s+\\S.*)$"
+        },
+        "default": []
+      };
+      // @ts-ignore
+      subscheme.properties.match_case = {
+        "description": "Match case of headings",
+        "type": "boolean",
+        "default": false
       };
       break;
     case "MD044":
-      scheme.properties = {
-        "names": {
-          "description": "List of proper names",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": []
+      // @ts-ignore
+      subscheme.properties.names = {
+        "description": "List of proper names",
+        "type": "array",
+        "items": {
+          "type": "string"
         },
-        "code_blocks": {
-          "description": "Include code blocks",
-          "type": "boolean",
-          "default": true
-        },
-        "html_elements": {
-          "description": "Include HTML elements",
-          "type": "boolean",
-          "default": true
-        }
+        "default": []
+      };
+      // @ts-ignore
+      subscheme.properties.code_blocks = {
+        "description": "Include code blocks",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.html_elements = {
+        "description": "Include HTML elements",
+        "type": "boolean",
+        "default": true
       };
       break;
     case "MD046":
-      scheme.properties = {
-        "style": {
-          "description": "Block style",
-          "type": "string",
-          "enum": [
-            "consistent",
-            "fenced",
-            "indented"
-          ],
-          "default": "consistent"
-        }
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": "Block style",
+        "type": "string",
+        "enum": [
+          "consistent",
+          "fenced",
+          "indented"
+        ],
+        "default": "consistent"
       };
       break;
     case "MD048":
-      scheme.properties = {
-        "style": {
-          "description": "Code fence style",
-          "type": "string",
-          "enum": [
-            "consistent",
-            "backtick",
-            "tilde"
-          ],
-          "default": "consistent"
-        }
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": "Code fence style",
+        "type": "string",
+        "enum": [
+          "consistent",
+          "backtick",
+          "tilde"
+        ],
+        "default": "consistent"
       };
       break;
     case "MD049":
     case "MD050":
-      scheme.properties = {
-        "style": {
-          "description": (ruleName === "MD049") ? "Emphasis style" : "Strong style",
-          "type": "string",
-          "enum": [
-            "consistent",
-            "asterisk",
-            "underscore"
-          ],
-          "default": "consistent"
-        }
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": (ruleName === "MD049") ? "Emphasis style" : "Strong style",
+        "type": "string",
+        "enum": [
+          "consistent",
+          "asterisk",
+          "underscore"
+        ],
+        "default": "consistent"
       };
       break;
     case "MD051":
-      scheme.properties = {
-        "ignore_case": {
-          "description": "Ignore case of fragments",
-          "type": "boolean",
-          "default": false
-        },
-        "ignored_pattern": {
-          "description": "Pattern for ignoring additional fragments",
-          "type": "string",
-          "default": ""
-        }
+      // @ts-ignore
+      subscheme.properties.ignore_case = {
+        "description": "Ignore case of fragments",
+        "type": "boolean",
+        "default": false
+      };
+      // @ts-ignore
+      subscheme.properties.ignored_pattern = {
+        "description": "Pattern for ignoring additional fragments",
+        "type": "string",
+        "default": ""
       };
       break;
     case "MD052":
-      scheme.properties = {
-        "ignored_labels": {
-          "description": "Ignored link labels",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [ "x" ]
+      // @ts-ignore
+      subscheme.properties.ignored_labels = {
+        "description": "Ignored link labels",
+        "type": "array",
+        "items": {
+          "type": "string"
         },
-        "shortcut_syntax": {
-          "description": "Include shortcut syntax",
-          "type": "boolean",
-          "default": false
-        }
+        "default": [ "x" ]
+      };
+      // @ts-ignore
+      subscheme.properties.shortcut_syntax = {
+        "description": "Include shortcut syntax",
+        "type": "boolean",
+        "default": false
       };
       break;
     case "MD053":
-      scheme.properties = {
-        "ignored_definitions": {
-          "description": "Ignored definitions",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [ "//" ]
-        }
+      // @ts-ignore
+      subscheme.properties.ignored_definitions = {
+        "description": "Ignored definitions",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": [ "//" ]
       };
       break;
     case "MD054":
-      scheme.properties = {
-        "autolink": {
-          "description": "Allow autolinks",
-          "type": "boolean",
-          "default": true
-        },
-        "inline": {
-          "description": "Allow inline links and images",
-          "type": "boolean",
-          "default": true
-        },
-        "full": {
-          "description": "Allow full reference links and images",
-          "type": "boolean",
-          "default": true
-        },
-        "collapsed": {
-          "description": "Allow collapsed reference links and images",
-          "type": "boolean",
-          "default": true
-        },
-        "shortcut": {
-          "description": "Allow shortcut reference links and images",
-          "type": "boolean",
-          "default": true
-        },
-        "url_inline": {
-          "description": "Allow URLs as inline links",
-          "type": "boolean",
-          "default": true
-        }
+      // @ts-ignore
+      subscheme.properties.autolink = {
+        "description": "Allow autolinks",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.inline = {
+        "description": "Allow inline links and images",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.full = {
+        "description": "Allow full reference links and images",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.collapsed = {
+        "description": "Allow collapsed reference links and images",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.shortcut = {
+        "description": "Allow shortcut reference links and images",
+        "type": "boolean",
+        "default": true
+      };
+      // @ts-ignore
+      subscheme.properties.url_inline = {
+        "description": "Allow URLs as inline links",
+        "type": "boolean",
+        "default": true
       };
       break;
     case "MD055":
-      scheme.properties = {
-        "style": {
-          "description": "Table pipe style",
-          "type": "string",
-          "enum": [
-            "consistent",
-            "leading_only",
-            "trailing_only",
-            "leading_and_trailing",
-            "no_leading_or_trailing"
-          ],
-          "default": "consistent"
-        }
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": "Table pipe style",
+        "type": "string",
+        "enum": [
+          "consistent",
+          "leading_only",
+          "trailing_only",
+          "leading_and_trailing",
+          "no_leading_or_trailing"
+        ],
+        "default": "consistent"
       };
       break;
     case "MD059":
-      scheme.properties = {
-        "prohibited_texts": {
-          "description": "Prohibited link texts",
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "click here",
-            "here",
-            "link",
-            "more"
-          ]
-        }
+      // @ts-ignore
+      subscheme.properties.prohibited_texts = {
+        "description": "Prohibited link texts",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": [
+          "click here",
+          "here",
+          "link",
+          "more"
+        ]
+      };
+      break;
+    case "MD060":
+      // @ts-ignore
+      subscheme.properties.style = {
+        "description": "Table column style",
+        "type": "string",
+        "enum": [
+          "any",
+          "aligned",
+          "compact",
+          "tight"
+        ],
+        "default": "any"
+      };
+      // @ts-ignore
+      subscheme.properties.aligned_delimiter = {
+        "description": "Aligned delimiter columns",
+        "type": "boolean",
+        "default": false
       };
       break;
     default:
-      custom = false;
       break;
   }
-  if (custom) {
-    // @ts-ignore
-    scheme.type = [ "boolean", "object" ];
-    scheme.additionalProperties = false;
-  }
+  /* eslint-enable camelcase */
   for (const name of rule.names) {
     schema.properties[name] = scheme;
     // Using $ref causes rule aliases not to get JSDoc comments
@@ -609,7 +669,10 @@ for (const rule of rules) {
 for (const [ tag, tagTags ] of Object.entries(tags)) {
   const scheme = {
     "description": `${tag} : ${tagTags.join(", ")}`,
-    "type": "boolean",
+    "oneOf": [
+      { "type": "boolean" },
+      { "enum": [ "error", "warning" ] }
+    ],
     "default": true
   };
   schema.properties[tag] = scheme;

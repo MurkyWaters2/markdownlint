@@ -30,7 +30,7 @@ function assertLintResults(results: LintResults) {
   assert.equal(results["string"][0].lineNumber, 1);
   assert.deepEqual(results["string"][0].ruleNames, [ "MD047", "single-trailing-newline" ]);
   assert.equal(results["string"][0].ruleDescription, "Files should end with a single newline character");
-  assert.equal(results["string"][0].ruleInformation.replace(/v\d+\.\d+\.\d+/, "v0.0.0"), "https://github.com/DavidAnson/markdownlint/blob/v0.0.0/doc/md047.md");
+  assert.equal(results["string"][0].ruleInformation?.replace(/v\d+\.\d+\.\d+/, "v0.0.0"), "https://github.com/DavidAnson/markdownlint/blob/v0.0.0/doc/md047.md");
   assert.equal(results["string"][0].errorDetail, null);
   assert.equal(results["string"][0].errorContext, null);
   assert.deepEqual(results["string"][0].errorRange, [ 9, 1 ]);
@@ -59,7 +59,8 @@ function assertLintResults(results: LintResults) {
           "editColumn": 1,
           "deleteCount": 1,
           "insertText": "text"
-        }
+        },
+        "severity": "error"
       }
     ]
   };
@@ -171,13 +172,15 @@ lintAsync(options, assertLintResultsCallback);
   assertLintResultsCallback(null, await lintPromise(options));
 })();
 
+const needsFixing = "#  Heading\n";
+
 assert.equal(
   applyFix(
-    "# Fixing\n",
+    needsFixing,
     {
-      "insertText": "Head",
-      "editColumn": 3,
-      "deleteCount": 3
+      "insertText": " ",
+      "editColumn": 2,
+      "deleteCount": 2
     },
     "\n"
   ),
@@ -186,17 +189,12 @@ assert.equal(
 
 assert.equal(
   applyFixes(
-    "# Fixing\n",
-    [
-      {
-        "lineNumber": 1,
-        "fixInfo": {
-          "insertText": "Head",
-          "editColumn": 3,
-          "deleteCount": 3
-        }
+    needsFixing,
+    lintSync({
+      "strings": {
+        needsFixing
       }
-    ]
+    })["needsFixing"]
   ),
   "# Heading\n"
 );

@@ -5,7 +5,7 @@ import path from "node:path";
 import test from "ava";
 import { characterEntities } from "character-entities";
 import { gemoji } from "gemoji";
-import helpers from "../helpers/helpers.cjs";
+import helpers, { formatLintResults } from "../helpers/helpers.cjs";
 import { lint } from "markdownlint/promise";
 import { forEachInlineCodeSpan } from "../lib/markdownit.cjs";
 import { getReferenceLinkImageData } from "../lib/cache.mjs";
@@ -347,6 +347,7 @@ test("getPreferredLineEnding", (t) => {
     const actual = helpers.getPreferredLineEnding(input);
     t.is(actual, expected, "Incorrect line ending returned.");
   }
+  // @ts-ignore
   t.is(helpers.getPreferredLineEnding("", null), "\n");
   t.is(helpers.getPreferredLineEnding("", { "EOL": "\n" }), "\n");
   t.is(helpers.getPreferredLineEnding("", { "EOL": "\r\n" }), "\r\n");
@@ -358,29 +359,37 @@ test("expandTildePath", (t) => {
   const homedir = os.homedir();
   t.is(helpers.expandTildePath("", os), "");
   t.is(helpers.expandTildePath("", {}), "");
+  // @ts-ignore
   t.is(helpers.expandTildePath("", null), "");
   t.is(
     path.resolve(helpers.expandTildePath("~", os)),
     homedir
   );
+  // @ts-ignore
   t.is(helpers.expandTildePath("~", null), "~");
   t.is(helpers.expandTildePath("file", os), "file");
+  // @ts-ignore
   t.is(helpers.expandTildePath("file", null), "file");
   t.is(helpers.expandTildePath("/file", os), "/file");
+  // @ts-ignore
   t.is(helpers.expandTildePath("/file", null), "/file");
   t.is(
     path.resolve(helpers.expandTildePath("~/file", os)),
     path.join(homedir, "/file")
   );
+  // @ts-ignore
   t.is(helpers.expandTildePath("~/file", null), "~/file");
   t.is(helpers.expandTildePath("dir/file", os), "dir/file");
+  // @ts-ignore
   t.is(helpers.expandTildePath("dir/file", null), "dir/file");
   t.is(helpers.expandTildePath("/dir/file", os), "/dir/file");
+  // @ts-ignore
   t.is(helpers.expandTildePath("/dir/file", null), "/dir/file");
   t.is(
     path.resolve(helpers.expandTildePath("~/dir/file", os)),
     path.join(homedir, "/dir/file")
   );
+  // @ts-ignore
   t.is(helpers.expandTildePath("~/dir/file", null), "~/dir/file");
 });
 
@@ -396,6 +405,7 @@ test("getReferenceLinkImageData().shortcuts", (t) => {
         "parser": "none",
         "function":
           () => {
+            // @ts-ignore
             const { shortcuts } = getReferenceLinkImageData();
             t.is(shortcuts.size, 0, [ ...shortcuts.keys() ].join(", "));
           }
@@ -528,4 +538,19 @@ test("hasOverlap", (t) => {
     t.false(helpers.hasOverlap(rangeA, rangeB), JSON.stringify({ rangeA, rangeB }));
     t.false(helpers.hasOverlap(rangeB, rangeA), JSON.stringify({ rangeB, rangeA }));
   }
+});
+
+test("formatLintResults", async(t) => {
+  t.plan(2);
+  t.deepEqual(formatLintResults(undefined), []);
+  const lintResults = await lint({ "strings": { "content": "#  Heading\n<br/><!-- markdownlint-configure-file { \"MD033\": \"warning\" } -->" } });
+  t.deepEqual(
+    formatLintResults(lintResults),
+    [
+      "content:1:3 error MD019/no-multiple-space-atx Multiple spaces after hash on atx style heading [Context: \"#  Heading\"]",
+      "content:1 error MD022/blanks-around-headings Headings should be surrounded by blank lines [Expected: 1; Actual: 0; Below] [Context: \"#  Heading\"]",
+      "content:2:1 warning MD033/no-inline-html Inline HTML [Element: br]",
+      "content:2:64 error MD047/single-trailing-newline Files should end with a single newline character"
+    ]
+  );
 });
